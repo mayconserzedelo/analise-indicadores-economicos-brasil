@@ -41,15 +41,30 @@ def carregar_dados(data_inicio: str = "2015-01-01") -> pd.DataFrame:
     Carrega e junta os principais indicadores econômicos e financeiros.
 
     Indicadores incluídos:
-    - IPCA (433)              → Inflação oficial
-    - Selic (432)             → Taxa básica de juros (meta)
-    - Câmbio USD/BRL (1)      → Dólar comercial
-    - IBC-Br (24363)          → Índice de Atividade Econômica do Banco Central
-    - IGP-M (189)             → Índice Geral de Preços do Mercado
-    - Desemprego (24369)      → Taxa de desemprego (PNAD Contínua - aproximação SGS)
-    - Reservas Internacionais (3546) → Reservas internacionais (US$ milhões)
-    - Crédito Total (20631)   → Saldo de crédito do sistema financeiro
-    - Ibovespa                → Índice da bolsa (Yahoo Finance)
+    ----------------------
+    Inflação e preços:
+    - IPCA (433)
+    - IGP-M (189)
+
+    Juros e câmbio:
+    - Selic (432)
+    - Câmbio USD/BRL (1)
+
+    Atividade econômica:
+    - IBC-Br (24363)              → Proxy mensal de atividade
+    - PIB (4380)                  → PIB mensal (valores correntes)
+    - Produção Industrial (21859) → PIM-PF
+    - Vendas no Varejo (1455)     → Volume de vendas (PMC)
+
+    Mercado de trabalho e crédito:
+    - Desemprego (24369)
+    - Crédito Total (20631)
+
+    Setor externo:
+    - Reservas Internacionais (3546)
+
+    Mercado:
+    - Ibovespa (Yahoo Finance)
 
     Retorna
     -------
@@ -65,27 +80,45 @@ def carregar_dados(data_inicio: str = "2015-01-01") -> pd.DataFrame:
     selic = get_bcb_series(432, "Selic", data_inicio)
     cambio = get_bcb_series(1, "Cambio_USD_BRL", data_inicio)
 
-    # Atividade econômica e mercado de trabalho
-    ibc_br = get_bcb_series(24363, "IBC_Br", data_inicio)          # Atividade econômica
-    desemprego = get_bcb_series(24369, "Desemprego", data_inicio)  # Taxa de desemprego
+    # Atividade econômica
+    ibc_br = get_bcb_series(24363, "IBC_Br", data_inicio)
+    pib = get_bcb_series(4380, "PIB", data_inicio)
+    producao_industrial = get_bcb_series(21859, "Producao_Industrial", data_inicio)
+    vendas_varejo = get_bcb_series(1455, "Vendas_Varejo", data_inicio)
 
-    # Setor externo e crédito
-    reservas = get_bcb_series(3546, "Reservas_Internacionais", data_inicio)
+    # Mercado de trabalho e crédito
+    desemprego = get_bcb_series(24369, "Desemprego", data_inicio)
     credito = get_bcb_series(20631, "Credito_Total", data_inicio)
+
+    # Setor externo
+    reservas = get_bcb_series(3546, "Reservas_Internacionais", data_inicio)
 
     print("Baixando dados do Ibovespa...")
     ibov = get_ibovespa(data_inicio)
 
     # Junta todas as séries
     df = pd.concat(
-        [ipca, igpm, selic, cambio, ibc_br, desemprego, reservas, credito, ibov],
+        [
+            ipca,
+            igpm,
+            selic,
+            cambio,
+            ibc_br,
+            pib,
+            producao_industrial,
+            vendas_varejo,
+            desemprego,
+            credito,
+            reservas,
+            ibov,
+        ],
         axis=1,
     )
 
     # Forward fill para alinhar frequências diferentes (mensal vs diário)
     df = df.ffill()
 
-    # Remove dias sem pregão (finais de semana e feriados)
+    # Remove dias sem pregão
     df = df.dropna(subset=["Ibovespa"])
 
     print(f"\nDados carregados com sucesso!")
@@ -97,7 +130,6 @@ def carregar_dados(data_inicio: str = "2015-01-01") -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    # Teste rápido
     dados = carregar_dados("2020-01-01")
     print("\nPrimeiras linhas:")
     print(dados.head())

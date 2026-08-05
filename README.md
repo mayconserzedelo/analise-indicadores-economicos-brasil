@@ -15,9 +15,12 @@ Projeto de análise exploratória de dados focado em indicadores macroeconômico
 | **Selic** | 432 | Taxa básica de juros (meta) |
 | **Câmbio USD/BRL** | 1 | Taxa de câmbio comercial |
 | **IBC-Br** | 24363 | Índice de Atividade Econômica do BC |
+| **PIB** | 4380 | PIB mensal (valores correntes) |
+| **Produção Industrial** | 21859 | Produção Industrial Mensal (PIM-PF) |
+| **Vendas no Varejo** | 1455 | Volume de vendas no varejo (PMC) |
 | **Desemprego** | 24369 | Taxa de desemprego (PNAD) |
-| **Reservas Internacionais** | 3546 | Reservas em US$ milhões |
 | **Crédito Total** | 20631 | Saldo de crédito do sistema financeiro |
+| **Reservas Internacionais** | 3546 | Reservas em US$ milhões |
 | **Ibovespa** | Yahoo Finance | Principal índice da bolsa brasileira |
 
 ---
@@ -88,19 +91,19 @@ Abra o arquivo `notebooks/01_analise_indicadores.ipynb` no Jupyter ou VS Code.
 
 - Relação entre Selic e desempenho do Ibovespa
 - Comportamento do câmbio em períodos de alta inflação
-- Correlação entre atividade econômica (IBC-Br) e bolsa
-- Impacto do desemprego e do crédito no mercado
+- Correlação entre atividade econômica (IBC-Br / PIB / Produção Industrial) e bolsa
+- Impacto do desemprego, crédito e vendas no varejo no mercado
 - Evolução das reservas internacionais e percepção de risco
 
 ---
 
 ## Próximos passos (melhorias futuras)
 
-- [ ] Adicionar PIB, produção industrial e vendas no varejo
 - [ ] Criar dashboard interativo com Streamlit
 - [ ] Modelos simples de previsão (ARIMA / Prophet)
 - [ ] Análise de regimes (alta/baixa volatilidade)
 - [ ] Comparação com outros mercados emergentes
+- [ ] Adicionar variáveis de surpresa (realizado vs expectativa)
 
 ---
 
