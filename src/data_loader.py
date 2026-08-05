@@ -1,24 +1,23 @@
 """
 Módulo para carregar dados econômicos e financeiros.
-Fontes: Banco Central do Brasil e Yahoo Finance.
+Fontes: Banco Central do Brasil (SGS) e Yahoo Finance.
 """
 
 import pandas as pd
 import yfinance as yf
 from bcb import sgs
-from datetime import datetime, timedelta
 
 
 def get_bcb_series(codigo: int, nome: str, data_inicio: str = "2015-01-01") -> pd.Series:
     """
     Busca série temporal do Banco Central (SGS).
-    
-    Parâmetros:
-    -----------
+
+    Parâmetros
+    ----------
     codigo : int
-        Código da série no SGS (ex: 433 = IPCA, 432 = Selic)
+        Código da série no SGS
     nome : str
-        Nome que a série receberá
+        Nome que a série receberá no DataFrame
     data_inicio : str
         Data inicial no formato YYYY-MM-DD
     """
@@ -28,46 +27,72 @@ def get_bcb_series(codigo: int, nome: str, data_inicio: str = "2015-01-01") -> p
 
 
 def get_ibovespa(data_inicio: str = "2015-01-01") -> pd.Series:
-    """
-    Busca dados históricos do Ibovespa via Yahoo Finance.
-    """
+    """Busca dados históricos do Ibovespa via Yahoo Finance."""
     ticker = yf.Ticker("^BVSP")
     df = ticker.history(start=data_inicio)
     serie = df["Close"]
     serie.name = "Ibovespa"
-    # Remove timezone para facilitar merges
     serie.index = serie.index.tz_localize(None)
     return serie
 
 
 def carregar_dados(data_inicio: str = "2015-01-01") -> pd.DataFrame:
     """
-    Carrega e junta os principais indicadores em um único DataFrame.
-    
-    Retorna:
-    --------
-    pd.DataFrame com colunas: IPCA, Selic, Cambio, Ibovespa
+    Carrega e junta os principais indicadores econômicos e financeiros.
+
+    Indicadores incluídos:
+    - IPCA (433)              → Inflação oficial
+    - Selic (432)             → Taxa básica de juros (meta)
+    - Câmbio USD/BRL (1)      → Dólar comercial
+    - IBC-Br (24363)          → Índice de Atividade Econômica do Banco Central
+    - IGP-M (189)             → Índice Geral de Preços do Mercado
+    - Desemprego (24369)      → Taxa de desemprego (PNAD Contínua - aproximação SGS)
+    - Reservas Internacionais (3546) → Reservas internacionais (US$ milhões)
+    - Crédito Total (20631)   → Saldo de crédito do sistema financeiro
+    - Ibovespa                → Índice da bolsa (Yahoo Finance)
+
+    Retorna
+    -------
+    pd.DataFrame com todos os indicadores alinhados temporalmente.
     """
     print("Baixando dados do Banco Central...")
-    ipca = get_bcb_series(433, "IPCA", data_inicio)          # IPCA mensal
-    selic = get_bcb_series(432, "Selic", data_inicio)        # Selic meta
-    cambio = get_bcb_series(1, "Cambio_USD_BRL", data_inicio)  # Dólar comercial
+
+    # Inflação e preços
+    ipca = get_bcb_series(433, "IPCA", data_inicio)
+    igpm = get_bcb_series(189, "IGP_M", data_inicio)
+
+    # Juros e câmbio
+    selic = get_bcb_series(432, "Selic", data_inicio)
+    cambio = get_bcb_series(1, "Cambio_USD_BRL", data_inicio)
+
+    # Atividade econômica e mercado de trabalho
+    ibc_br = get_bcb_series(24363, "IBC_Br", data_inicio)          # Atividade econômica
+    desemprego = get_bcb_series(24369, "Desemprego", data_inicio)  # Taxa de desemprego
+
+    # Setor externo e crédito
+    reservas = get_bcb_series(3546, "Reservas_Internacionais", data_inicio)
+    credito = get_bcb_series(20631, "Credito_Total", data_inicio)
 
     print("Baixando dados do Ibovespa...")
     ibov = get_ibovespa(data_inicio)
 
-    # Junta tudo
-    df = pd.concat([ipca, selic, cambio, ibov], axis=1)
+    # Junta todas as séries
+    df = pd.concat(
+        [ipca, igpm, selic, cambio, ibc_br, desemprego, reservas, credito, ibov],
+        axis=1,
+    )
 
-    # Como IPCA é mensal, fazemos forward fill para alinhar com dados diários
+    # Forward fill para alinhar frequências diferentes (mensal vs diário)
     df = df.ffill()
 
-    # Remove linhas sem Ibovespa (finais de semana/feriados)
+    # Remove dias sem pregão (finais de semana e feriados)
     df = df.dropna(subset=["Ibovespa"])
 
-    print(f"Dados carregados: {df.shape[0]} linhas | {df.shape[1]} colunas")
-    print(f"Período: {df.index.min().date()} até {df.index.max().date()}")
-    
+    print(f"\nDados carregados com sucesso!")
+    print(f"Linhas: {df.shape[0]} | Colunas: {df.shape[1]}")
+    print(f"Período: {df.index.min().date()} → {df.index.max().date()}")
+    print(f"\nIndicadores: {list(df.columns)}")
+
     return df
 
 
@@ -76,5 +101,5 @@ if __name__ == "__main__":
     dados = carregar_dados("2020-01-01")
     print("\nPrimeiras linhas:")
     print(dados.head())
-    print("\nInformações:")
-    print(dados.info())
+    print("\nEstatísticas descritivas:")
+    print(dados.describe().round(2))

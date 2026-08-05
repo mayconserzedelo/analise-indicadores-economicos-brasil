@@ -8,23 +8,28 @@ Projeto de análise exploratória de dados focado em indicadores macroeconômico
 
 ## Indicadores analisados
 
-| Indicador | Fonte | Descrição |
-|---------|-------|---------|
-| **IPCA** | Banco Central / Sidra IBGE | Inflação oficial do Brasil |
-| **Selic** | Banco Central | Taxa básica de juros |
-| **Câmbio (USD/BRL)** | Banco Central | Taxa de câmbio |
+| Indicador | Código SGS | Descrição |
+|---------|------------|---------|
+| **IPCA** | 433 | Inflação oficial (IBGE) |
+| **IGP-M** | 189 | Índice Geral de Preços do Mercado |
+| **Selic** | 432 | Taxa básica de juros (meta) |
+| **Câmbio USD/BRL** | 1 | Taxa de câmbio comercial |
+| **IBC-Br** | 24363 | Índice de Atividade Econômica do BC |
+| **Desemprego** | 24369 | Taxa de desemprego (PNAD) |
+| **Reservas Internacionais** | 3546 | Reservas em US$ milhões |
+| **Crédito Total** | 20631 | Saldo de crédito do sistema financeiro |
 | **Ibovespa** | Yahoo Finance | Principal índice da bolsa brasileira |
 
 ---
 
 ## O que este projeto demonstra
 
-- Coleta de dados econômicos via APIs públicas
-- Limpeza e preparação de séries temporais
-- Análise exploratória (EDA)
+- Coleta de dados econômicos via APIs públicas (Banco Central + Yahoo Finance)
+- Limpeza e preparação de séries temporais com frequências diferentes
+- Análise exploratória (EDA) completa
 - Visualizações claras e profissionais
 - Análise de correlação entre variáveis macro e mercado
-- Geração de insights de negócio/economia
+- Geração de insights econômicos e de negócio
 
 ---
 
@@ -38,8 +43,9 @@ analise-indicadores-economicos-brasil/
 │   └── 01_analise_indicadores.ipynb
 ├── src/
 │   └── data_loader.py
+├── data/
 └── reports/
-    └── figures/          # gráficos salvos
+    └── figures/
 ```
 
 ---
@@ -56,7 +62,6 @@ cd analise-indicadores-economicos-brasil
 ```bash
 python -m venv venv
 source venv/bin/activate        # Linux/Mac
-# ou
 venv\Scripts\activate           # Windows
 ```
 
@@ -72,36 +77,37 @@ Abra o arquivo `notebooks/01_analise_indicadores.ipynb` no Jupyter ou VS Code.
 
 ## Principais bibliotecas utilizadas
 
-- **pandas** → manipulação de dados
-- **numpy** → operações numéricas
+- **pandas** + **numpy** → manipulação de dados
 - **matplotlib** + **seaborn** → visualização
 - **yfinance** → dados do Ibovespa
-- **requests** / **bcb** → dados do Banco Central
+- **python-bcb** → dados do Banco Central (SGS)
 
 ---
 
-## Insights esperados (exemplos)
+## Insights que você pode explorar
 
-- Como a Selic se relaciona com o desempenho do Ibovespa
+- Relação entre Selic e desempenho do Ibovespa
 - Comportamento do câmbio em períodos de alta inflação
-- Correlação entre IPCA e taxa de juros
-- Momentos de maior volatilidade no mercado brasileiro
+- Correlação entre atividade econômica (IBC-Br) e bolsa
+- Impacto do desemprego e do crédito no mercado
+- Evolução das reservas internacionais e percepção de risco
 
 ---
 
 ## Próximos passos (melhorias futuras)
 
-- [ ] Adicionar mais indicadores (PIB, desemprego, balança comercial)
-- [ ] Criar dashboard interativo (Streamlit ou Power BI)
+- [ ] Adicionar PIB, produção industrial e vendas no varejo
+- [ ] Criar dashboard interativo com Streamlit
 - [ ] Modelos simples de previsão (ARIMA / Prophet)
-- [ ] Análise de regime (períodos de alta/baixa volatilidade)
+- [ ] Análise de regimes (alta/baixa volatilidade)
+- [ ] Comparação com outros mercados emergentes
 
 ---
 
 ## Autor
 
 **Maycon Serzedelo**  
-Economista em transição para Data Science | Foco em FinTech e análise quantitativa  
+Economista em transição para Data Science | Foco em FinTech e análise quantitativa
 
 - LinkedIn: [linkedin.com/in/maycon-serzedelo-854972215](https://www.linkedin.com/in/maycon-serzedelo-854972215/)
 - GitHub: [github.com/mayconserzedelo](https://github.com/mayconserzedelo)
@@ -110,4 +116,4 @@ Economista em transição para Data Science | Foco em FinTech e análise quantit
 
 ## Licença
 
-Este projeto é de uso educacional e de portfólio.
+Projeto educacional e de portfólio.
