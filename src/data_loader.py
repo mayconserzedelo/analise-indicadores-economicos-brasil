@@ -9,66 +9,24 @@ from bcb import sgs
 
 
 def get_bcb_series(codigo: int, nome: str, data_inicio: str = "2015-01-01") -> pd.Series:
-    """
-    Busca série temporal do Banco Central (SGS).
-
-    Parâmetros
-    ----------
-    codigo : int
-        Código da série no SGS
-    nome : str
-        Nome que a série receberá no DataFrame
-    data_inicio : str
-        Data inicial no formato YYYY-MM-DD
-    """
+    """Busca série temporal do Banco Central (SGS)."""
     serie = sgs.get(codigo, start=data_inicio)
     serie.name = nome
     return serie
 
 
-def get_ibovespa(data_inicio: str = "2015-01-01") -> pd.Series:
-    """Busca dados históricos do Ibovespa via Yahoo Finance."""
-    ticker = yf.Ticker("^BVSP")
-    df = ticker.history(start=data_inicio)
-    serie = df["Close"]
-    serie.name = "Ibovespa"
+def get_yahoo_series(ticker: str, nome: str, data_inicio: str = "2015-01-01") -> pd.Series:
+    """Busca série de preço de fechamento via Yahoo Finance."""
+    dados = yf.Ticker(ticker).history(start=data_inicio)
+    serie = dados["Close"]
+    serie.name = nome
     serie.index = serie.index.tz_localize(None)
     return serie
 
 
 def carregar_dados(data_inicio: str = "2015-01-01") -> pd.DataFrame:
     """
-    Carrega e junta os principais indicadores econômicos e financeiros.
-
-    Indicadores incluídos:
-    ----------------------
-    Inflação e preços:
-    - IPCA (433)
-    - IGP-M (189)
-
-    Juros e câmbio:
-    - Selic (432)
-    - Câmbio USD/BRL (1)
-
-    Atividade econômica:
-    - IBC-Br (24363)              → Proxy mensal de atividade
-    - PIB (4380)                  → PIB mensal (valores correntes)
-    - Produção Industrial (21859) → PIM-PF
-    - Vendas no Varejo (1455)     → Volume de vendas (PMC)
-
-    Mercado de trabalho e crédito:
-    - Desemprego (24369)
-    - Crédito Total (20631)
-
-    Setor externo:
-    - Reservas Internacionais (3546)
-
-    Mercado:
-    - Ibovespa (Yahoo Finance)
-
-    Retorna
-    -------
-    pd.DataFrame com todos os indicadores alinhados temporalmente.
+    Carrega indicadores econômicos do Brasil + índices de mercados emergentes.
     """
     print("Baixando dados do Banco Central...")
 
@@ -93,32 +51,26 @@ def carregar_dados(data_inicio: str = "2015-01-01") -> pd.DataFrame:
     # Setor externo
     reservas = get_bcb_series(3546, "Reservas_Internacionais", data_inicio)
 
-    print("Baixando dados do Ibovespa...")
-    ibov = get_ibovespa(data_inicio)
+    print("Baixando índices de mercados emergentes...")
+    ibov = get_yahoo_series("^BVSP", "Ibovespa", data_inicio)
+    sp500 = get_yahoo_series("^GSPC", "SP500", data_inicio)           # EUA (referência)
+    mexico = get_yahoo_series("^MXX", "Mexico_IPC", data_inicio)       # México
+    india = get_yahoo_series("^NSEI", "India_Nifty", data_inicio)      # Índia
+    china = get_yahoo_series("000001.SS", "China_Shanghai", data_inicio)  # China
+    africa_sul = get_yahoo_series("^JN0U.JO", "Africa_Sul", data_inicio)  # África do Sul (se falhar, tenta outro)
 
-    # Junta todas as séries
+    # Junta tudo
     df = pd.concat(
         [
-            ipca,
-            igpm,
-            selic,
-            cambio,
-            ibc_br,
-            pib,
-            producao_industrial,
-            vendas_varejo,
-            desemprego,
-            credito,
-            reservas,
-            ibov,
+            ipca, igpm, selic, cambio,
+            ibc_br, pib, producao_industrial, vendas_varejo,
+            desemprego, credito, reservas,
+            ibov, sp500, mexico, india, china,
         ],
         axis=1,
     )
 
-    # Forward fill para alinhar frequências diferentes (mensal vs diário)
     df = df.ffill()
-
-    # Remove dias sem pregão
     df = df.dropna(subset=["Ibovespa"])
 
     print(f"\nDados carregados com sucesso!")
@@ -131,7 +83,4 @@ def carregar_dados(data_inicio: str = "2015-01-01") -> pd.DataFrame:
 
 if __name__ == "__main__":
     dados = carregar_dados("2020-01-01")
-    print("\nPrimeiras linhas:")
-    print(dados.head())
-    print("\nEstatísticas descritivas:")
-    print(dados.describe().round(2))
+    print(dados.tail())

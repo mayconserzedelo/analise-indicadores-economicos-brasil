@@ -1,122 +1,75 @@
 # Análise de Indicadores Econômicos e Mercado Financeiro Brasileiro
 
-Projeto de análise exploratória de dados focado em indicadores macroeconômicos e mercado financeiro do Brasil.
+Projeto completo de análise exploratória + comparação internacional + regimes de volatilidade + previsão.
 
-**Objetivo:** Unir conhecimento de Economia com técnicas de Data Science para gerar insights sobre a relação entre variáveis macroeconômicas e o mercado de ações.
-
----
-
-## Indicadores analisados
-
-| Indicador | Código SGS | Descrição |
-|---------|------------|---------|
-| **IPCA** | 433 | Inflação oficial (IBGE) |
-| **IGP-M** | 189 | Índice Geral de Preços do Mercado |
-| **Selic** | 432 | Taxa básica de juros (meta) |
-| **Câmbio USD/BRL** | 1 | Taxa de câmbio comercial |
-| **IBC-Br** | 24363 | Índice de Atividade Econômica do BC |
-| **PIB** | 4380 | PIB mensal (valores correntes) |
-| **Produção Industrial** | 21859 | Produção Industrial Mensal (PIM-PF) |
-| **Vendas no Varejo** | 1455 | Volume de vendas no varejo (PMC) |
-| **Desemprego** | 24369 | Taxa de desemprego (PNAD) |
-| **Crédito Total** | 20631 | Saldo de crédito do sistema financeiro |
-| **Reservas Internacionais** | 3546 | Reservas em US$ milhões |
-| **Ibovespa** | Yahoo Finance | Principal índice da bolsa brasileira |
+**Autor:** Maycon Serzedelo  
+Economista em transição para Data Science | Foco em FinTech e análise quantitativa
 
 ---
 
-## O que este projeto demonstra
+## O que o projeto cobre
 
-- Coleta de dados econômicos via APIs públicas (Banco Central + Yahoo Finance)
-- Limpeza e preparação de séries temporais com frequências diferentes
-- Análise exploratória (EDA) completa
-- Visualizações claras e profissionais
-- Análise de correlação entre variáveis macro e mercado
-- Geração de insights econômicos e de negócio
+1. **12 indicadores econômicos do Brasil** (IPCA, Selic, Câmbio, PIB, Produção Industrial, Varejo, etc.)
+2. **Comparação com mercados emergentes** (México, Índia, China + S&P 500 como referência)
+3. **Análise de regimes de volatilidade** (alta vs baixa)
+4. **Modelos de previsão** (ARIMA e Prophet)
+5. Correlações e insights macroeconômicos
 
 ---
 
-## Estrutura do projeto
+## Indicadores Brasileiros
 
-```
-analise-indicadores-economicos-brasil/
-├── README.md
-├── requirements.txt
-├── notebooks/
-│   └── 01_analise_indicadores.ipynb
-├── src/
-│   └── data_loader.py
-├── data/
-└── reports/
-    └── figures/
-```
+| Indicador | Código / Fonte |
+|---------|----------------|
+| IPCA | 433 |
+| IGP-M | 189 |
+| Selic | 432 |
+| Câmbio USD/BRL | 1 |
+| IBC-Br | 24363 |
+| PIB | 4380 |
+| Produção Industrial | 21859 |
+| Vendas no Varejo | 1455 |
+| Desemprego | 24369 |
+| Crédito Total | 20631 |
+| Reservas Internacionais | 3546 |
+| Ibovespa | Yahoo Finance |
+
+## Mercados Comparados
+
+- Ibovespa (Brasil)
+- S&P 500 (EUA)
+- IPC (México)
+- Nifty 50 (Índia)
+- Shanghai Composite (China)
 
 ---
 
 ## Como executar
 
-### 1. Clone o repositório
 ```bash
 git clone https://github.com/mayconserzedelo/analise-indicadores-economicos-brasil.git
 cd analise-indicadores-economicos-brasil
-```
-
-### 2. Crie um ambiente virtual (recomendado)
-```bash
-python -m venv venv
-source venv/bin/activate        # Linux/Mac
-venv\Scripts\activate           # Windows
-```
-
-### 3. Instale as dependências
-```bash
 pip install -r requirements.txt
 ```
 
-### 4. Execute o notebook
-Abra o arquivo `notebooks/01_analise_indicadores.ipynb` no Jupyter ou VS Code.
+Depois abra o notebook:
+`notebooks/01_analise_indicadores.ipynb`
 
 ---
 
-## Principais bibliotecas utilizadas
+## Estrutura
 
-- **pandas** + **numpy** → manipulação de dados
-- **matplotlib** + **seaborn** → visualização
-- **yfinance** → dados do Ibovespa
-- **python-bcb** → dados do Banco Central (SGS)
-
----
-
-## Insights que você pode explorar
-
-- Relação entre Selic e desempenho do Ibovespa
-- Comportamento do câmbio em períodos de alta inflação
-- Correlação entre atividade econômica (IBC-Br / PIB / Produção Industrial) e bolsa
-- Impacto do desemprego, crédito e vendas no varejo no mercado
-- Evolução das reservas internacionais e percepção de risco
-
----
-
-## Próximos passos (melhorias futuras)
-
-- [ ] Criar dashboard interativo com Streamlit
-- [ ] Modelos simples de previsão (ARIMA / Prophet)
-- [ ] Análise de regimes (alta/baixa volatilidade)
-- [ ] Comparação com outros mercados emergentes
-- [ ] Adicionar variáveis de surpresa (realizado vs expectativa)
+```
+├── README.md
+├── requirements.txt
+├── notebooks/01_analise_indicadores.ipynb
+├── src/data_loader.py
+└── reports/figures/
+```
 
 ---
 
 ## Autor
 
 **Maycon Serzedelo**  
-Economista em transição para Data Science | Foco em FinTech e análise quantitativa
-
-- LinkedIn: [linkedin.com/in/maycon-serzedelo-854972215](https://www.linkedin.com/in/maycon-serzedelo-854972215/)
-- GitHub: [github.com/mayconserzedelo](https://github.com/mayconserzedelo)
-
----
-
-## Licença
-
-Projeto educacional e de portfólio.
+[LinkedIn](https://www.linkedin.com/in/maycon-serzedelo-854972215/) · [GitHub](https://github.com/mayconserzedelo)
