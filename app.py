@@ -40,10 +40,13 @@ data_inicio = st.sidebar.selectbox(
 )
 
 with st.spinner("Carregando dados... Isso pode levar alguns segundos na primeira vez."):
-    df = load_data(data_inicio)
-
-st.sidebar.success(f"Dados carregados: {df.shape[0]} linhas")
-st.sidebar.markdown(f"Período: **{df.index.min().date()}** → **{df.index.max().date()}**")
+    try:
+        df = load_data(data_inicio)
+        st.sidebar.success(f"Dados carregados: {df.shape[0]} linhas")
+        st.sidebar.markdown(f"Período: **{df.index.min().date()}** → **{df.index.max().date()}**")
+    except Exception as e:
+        st.error(f"Erro ao carregar dados: {e}")
+        st.stop()
 
 # Abas principais
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
@@ -75,12 +78,21 @@ with tab1:
         "Ibovespa": "Ibovespa",
     }
 
-    # Filtro de indicadores
+    # Só mostra opções que realmente existem no DataFrame
     opcoes = [v for k, v in indicadores_br.items() if k in df.columns]
+
+    # Defaults seguros (só os que existem nas opções)
+    defaults_preferidos = ["Ibovespa", "Selic (%)", "Câmbio USD/BRL", "IPCA (Inflação)"]
+    defaults = [d for d in defaults_preferidos if d in opcoes]
+
+    # Se nenhum default existir, pega os 4 primeiros
+    if not defaults and opcoes:
+        defaults = opcoes[:4]
+
     selecionados = st.multiselect(
         "Selecione os indicadores",
         options=opcoes,
-        default=["Ibovespa", "Selic (%)", "Câmbio USD/BRL", "IPCA (Inflação)"],
+        default=defaults,
     )
 
     # Mapeia de volta para o nome da coluna
@@ -88,7 +100,6 @@ with tab1:
     cols_plot = [col_map[s] for s in selecionados if s in col_map]
 
     if cols_plot:
-        # Cria subplots
         n = len(cols_plot)
         fig = make_subplots(
             rows=n,
@@ -120,7 +131,6 @@ with tab2:
     mercados_ok = [m for m in mercados if m in df.columns]
 
     if len(mercados_ok) >= 2:
-        # Normaliza base 100
         df_norm = df[mercados_ok].dropna(how="all")
         df_norm = df_norm / df_norm.iloc[0] * 100
 
@@ -132,7 +142,6 @@ with tab2:
         fig.update_layout(height=500)
         st.plotly_chart(fig, use_container_width=True)
 
-        # Tabela de performance
         st.markdown("### Performance")
         retornos = df[mercados_ok].pct_change()
         resumo = pd.DataFrame(
@@ -161,17 +170,20 @@ with tab3:
             "Producao_Industrial", "Vendas_Varejo", "Desemprego", "Ibovespa",
         ]
         cols_br = [c for c in cols_br if c in df.columns]
-        corr_br = df[cols_br].corr()
 
-        fig1 = px.imshow(
-            corr_br,
-            text_auto=".2f",
-            color_continuous_scale="RdBu_r",
-            zmin=-1,
-            zmax=1,
-            title="Correlação – Brasil",
-        )
-        st.plotly_chart(fig1, use_container_width=True)
+        if cols_br:
+            corr_br = df[cols_br].corr()
+            fig1 = px.imshow(
+                corr_br,
+                text_auto=".2f",
+                color_continuous_scale="RdBu_r",
+                zmin=-1,
+                zmax=1,
+                title="Correlação – Brasil",
+            )
+            st.plotly_chart(fig1, use_container_width=True)
+        else:
+            st.info("Sem dados suficientes.")
 
     with col2:
         st.markdown("**Mercados**")
@@ -186,6 +198,8 @@ with tab3:
                 title="Correlação de Retornos – Mercados",
             )
             st.plotly_chart(fig2, use_container_width=True)
+        else:
+            st.info("Sem dados suficientes.")
 
 # ============================================================
 # TAB 4 - Regimes de Volatilidade
@@ -193,43 +207,46 @@ with tab3:
 with tab4:
     st.subheader("Regimes de Volatilidade – Ibovespa")
 
-    df_vol = df[["Ibovespa"]].copy()
-    df_vol["Retorno"] = df_vol["Ibovespa"].pct_change()
-    df_vol["Vol_21d"] = df_vol["Retorno"].rolling(21).std() * np.sqrt(252)
-    mediana = df_vol["Vol_21d"].median()
-    df_vol["Regime"] = np.where(df_vol["Vol_21d"] > mediana, "Alta Volatilidade", "Baixa Volatilidade")
-
-    st.metric("Mediana da Volatilidade Anualizada", f"{mediana:.2%}")
-
-    # Gráfico de regimes
-    fig = go.Figure()
-
-    for regime, cor in [("Baixa Volatilidade", "green"), ("Alta Volatilidade", "red")]:
-        mask = df_vol["Regime"] == regime
-        fig.add_trace(
-            go.Scatter(
-                x=df_vol.index[mask],
-                y=df_vol["Ibovespa"][mask],
-                mode="markers",
-                name=regime,
-                marker=dict(size=3, color=cor),
-            )
+    if "Ibovespa" in df.columns:
+        df_vol = df[["Ibovespa"]].copy()
+        df_vol["Retorno"] = df_vol["Ibovespa"].pct_change()
+        df_vol["Vol_21d"] = df_vol["Retorno"].rolling(21).std() * np.sqrt(252)
+        mediana = df_vol["Vol_21d"].median()
+        df_vol["Regime"] = np.where(
+            df_vol["Vol_21d"] > mediana, "Alta Volatilidade", "Baixa Volatilidade"
         )
 
-    fig.update_layout(title="Ibovespa por Regime de Volatilidade", height=450)
-    st.plotly_chart(fig, use_container_width=True)
+        st.metric("Mediana da Volatilidade Anualizada", f"{mediana:.2%}")
 
-    # Volatilidade
-    fig2 = px.line(df_vol, y="Vol_21d", title="Volatilidade Móvel 21 dias (anualizada)")
-    fig2.add_hline(y=mediana, line_dash="dash", line_color="red", annotation_text="Mediana")
-    st.plotly_chart(fig2, use_container_width=True)
+        fig = go.Figure()
+        for regime, cor in [("Baixa Volatilidade", "green"), ("Alta Volatilidade", "red")]:
+            mask = df_vol["Regime"] == regime
+            fig.add_trace(
+                go.Scatter(
+                    x=df_vol.index[mask],
+                    y=df_vol["Ibovespa"][mask],
+                    mode="markers",
+                    name=regime,
+                    marker=dict(size=3, color=cor),
+                )
+            )
 
-    # Stats
-    st.markdown("### Estatísticas por Regime")
-    stats = df_vol.groupby("Regime").agg(
-        {"Retorno": ["mean", "std", "count"], "Ibovespa": ["mean", "min", "max"]}
-    ).round(4)
-    st.dataframe(stats, use_container_width=True)
+        fig.update_layout(title="Ibovespa por Regime de Volatilidade", height=450)
+        st.plotly_chart(fig, use_container_width=True)
+
+        fig2 = px.line(df_vol, y="Vol_21d", title="Volatilidade Móvel 21 dias (anualizada)")
+        fig2.add_hline(y=mediana, line_dash="dash", line_color="red", annotation_text="Mediana")
+        st.plotly_chart(fig2, use_container_width=True)
+
+        st.markdown("### Estatísticas por Regime")
+        stats = (
+            df_vol.groupby("Regime")
+            .agg({"Retorno": ["mean", "std", "count"], "Ibovespa": ["mean", "min", "max"]})
+            .round(4)
+        )
+        st.dataframe(stats, use_container_width=True)
+    else:
+        st.warning("Coluna Ibovespa não encontrada.")
 
 # ============================================================
 # TAB 5 - Sobre
